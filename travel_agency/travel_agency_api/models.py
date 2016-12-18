@@ -14,7 +14,6 @@ class Tour(models.Model):
                                validators=[MinValueValidator(Decimal('0.01')),])
     contact_details = models.CharField(max_length=200, verbose_name='Contact details')
     reservations = models.ManyToManyField(User, through='Reservation', related_name='reservations', blank=True)
-    comments = models.ManyToManyField(User, through='Comment', related_name='comments', blank=True)
 
     class Meta:
         verbose_name = 'Tour'
@@ -23,6 +22,20 @@ class Tour(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Place(models.Model):
+    tour = models.ForeignKey(Tour, verbose_name='Tour', related_name='place_tour')
+    latitude = models.FloatField(verbose_name='Latitude')
+    longitude = models.FloatField(verbose_name='Longitude')
+    address = models.CharField(max_length=150, verbose_name='Description')
+
+    class Meta:
+        verbose_name = 'Place'
+        verbose_name_plural = 'Places'
+
+    def __str__(self):
+        return self.address
 
 
 class Reservation(models.Model):
@@ -40,25 +53,10 @@ class Reservation(models.Model):
         return 'User {0}, tour {1}'.format(self.user, self.tour)
 
 
-class Comment(models.Model):
-    user = models.ForeignKey(User, verbose_name='User', related_name='comment_user')
-    tour = models.ForeignKey(Tour, verbose_name='Tour', related_name='comment_tour')
-    title = models.CharField(max_length=150, verbose_name='Title')
-    content = models.TextField(verbose_name='Content')
-    addition_date = models.DateTimeField(verbose_name='Time of addition')
-
-    class Meta:
-        verbose_name = 'Comment'
-        verbose_name_plural = 'Comments'
-        ordering = ('title',)
-
-    def __str__(self):
-        return 'Comment {0} by user {1}'.format(self.title, self.user)
-
-
 class Rating(models.Model):
-    tour = models.ForeignKey(Tour, verbose_name='Tour')
-    average_rating = models.DecimalField(verbose_name='Average rating', decimal_places=2, max_digits=3)
+    tour = models.ForeignKey(Tour, verbose_name='Tour', related_name='rating_tour')
+    average_rating = models.DecimalField(verbose_name='Average rating',
+                                         decimal_places=2, max_digits=3)
     rating_count = models.IntegerField(verbose_name='Count of ratings')
 
     class Meta:
@@ -71,8 +69,8 @@ class Rating(models.Model):
 
 
 class Image(models.Model):
-    tour = models.ForeignKey(Tour, verbose_name='Tour')
-    image = models.ImageField(verbose_name='Image')
+    tour = models.ForeignKey(Tour, verbose_name='Tour', related_name='image_tour')
+    image = models.URLField(verbose_name='Image')
     description = models.CharField(max_length=300, verbose_name='Description')
 
     class Meta:
